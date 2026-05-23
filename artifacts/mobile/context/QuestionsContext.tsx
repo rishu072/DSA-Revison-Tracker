@@ -83,8 +83,15 @@ export interface Question {
 
 export type QuestionInput = Omit<Question, "id" | "nextRevisionDate">;
 
+export interface RevisionEntry {
+  date: string;
+  confidence: number;
+  questionId: string;
+}
+
 interface QuestionsContextType {
   questions: Question[];
+  revisionHistory: RevisionEntry[];
   addQuestion: (q: QuestionInput) => Promise<void>;
   updateQuestion: (id: string, q: QuestionInput) => Promise<void>;
   deleteQuestion: (id: string) => Promise<void>;
@@ -95,21 +102,25 @@ interface QuestionsContextType {
 const QuestionsContext = createContext<QuestionsContextType | undefined>(undefined);
 
 const STORAGE_KEY = "@dsa_questions_v1";
+const HISTORY_KEY = "@dsa_revision_history_v1";
 
 export function QuestionsProvider({ children }: { children: React.ReactNode }) {
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [revisionHistory, setRevisionHistory] = useState<RevisionEntry[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    loadQuestions();
+    loadData();
   }, []);
 
-  async function loadQuestions() {
+  async function loadData() {
     try {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setQuestions(JSON.parse(stored));
-      }
+      const [stored, history] = await Promise.all([
+        AsyncStorage.getItem(STORAGE_KEY),
+        AsyncStorage.getItem(HISTORY_KEY),
+      ]);
+      if (stored) setQuestions(JSON.parse(stored));
+      if (history) setRevisionHistory(JSON.parse(history));
     } catch {
       // ignore
     } finally {
@@ -120,6 +131,11 @@ export function QuestionsProvider({ children }: { children: React.ReactNode }) {
   async function persist(qs: Question[]) {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(qs));
     setQuestions(qs);
+  }
+
+  async function persistHistory(entries: RevisionEntry[]) {
+    await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
+    setRevisionHistory(entries);
   }
 
   async function addQuestion(q: QuestionInput) {
@@ -147,10 +163,12 @@ export function QuestionsProvider({ children }: { children: React.ReactNode }) {
 
   async function deleteQuestion(id: string) {
     await persist(questions.filter((q) => q.id !== id));
+    await persistHistory(revisionHistory.filter((e) => e.questionId !== id));
   }
 
   async function markRevised(id: string) {
     const today = todayString();
+    const question = questions.find((q) => q.id === id);
     const updated = questions.map((q) =>
       q.id === id
         ? {
@@ -161,11 +179,20 @@ export function QuestionsProvider({ children }: { children: React.ReactNode }) {
         : q
     );
     await persist(updated);
+
+    if (question) {
+      const entry: RevisionEntry = {
+        date: today,
+        confidence: question.confidenceLevel,
+        questionId: id,
+      };
+      await persistHistory([...revisionHistory, entry]);
+    }
   }
 
   return (
     <QuestionsContext.Provider
-      value={{ questions, addQuestion, updateQuestion, deleteQuestion, markRevised, loaded }}
+      value={{ questions, revisionHistory, addQuestion, updateQuestion, deleteQuestion, markRevised, loaded }}
     >
       {children}
     </QuestionsContext.Provider>

@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import ProgressCharts from "@/components/ProgressCharts";
 import QuestionCard from "@/components/QuestionCard";
 import StatCard from "@/components/StatCard";
 import { isDueForRevision, useQuestions } from "@/context/QuestionsContext";
@@ -21,7 +22,7 @@ import { useColors } from "@/hooks/useColors";
 export default function DashboardScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { questions, loaded } = useQuestions();
+  const { questions, revisionHistory, loaded } = useQuestions();
 
   const stats = useMemo(() => {
     const total = questions.length;
@@ -129,6 +130,8 @@ export default function DashboardScreen() {
           </Text>
         </View>
       </View>
+
+      <ProgressCharts revisionHistory={revisionHistory} />
 
       {dueQuestions.length > 0 && (
         <>
