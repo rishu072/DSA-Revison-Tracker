@@ -16,7 +16,11 @@
 | 🌍 **Web Preview** | [Open in Browser](https://395ce506-0262-4c03-aed3-840231bf84a1-00-26usw98x1ppdv.pike.replit.dev) |
 
 <p align="center">
-  <img src="YOUR_IMAGE_LINK_HERE" width="700"/>
+  <img 
+    src="https://github.com/user-attachments/assets/ee561e2f-ee5c-40fe-bc4b-60f52692e2f7"
+    alt="DSA Tracker App Preview"
+    width="350"
+  />
 </p>
 
 
