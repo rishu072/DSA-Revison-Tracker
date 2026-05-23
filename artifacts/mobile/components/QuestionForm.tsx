@@ -4,13 +4,13 @@ import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
@@ -99,196 +99,211 @@ export default function QuestionForm({ initial, onSubmit, submitLabel }: Props) 
     5: colors.success,
   };
 
+  const webTopPad = Platform.OS === "web" ? 67 : 0;
+
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={[
-        styles.container,
-        { paddingBottom: insets.bottom + 24 + (Platform.OS === "web" ? 34 : 0) },
-      ]}
-      keyboardShouldPersistTaps="handled"
-    >
-      <View style={styles.field}>
-        <Text style={labelStyle}>Question Name *</Text>
-        <TextInput
-          style={inputStyle}
-          value={name}
-          onChangeText={setName}
-          placeholder="e.g. Longest Common Subsequence"
-          placeholderTextColor={colors.mutedForeground}
-        />
-      </View>
-
-      <View style={styles.field}>
-        <Text style={labelStyle}>Platform</Text>
-        <View style={styles.chips}>
-          {PLATFORMS.map((p) => (
-            <TouchableOpacity
-              key={p}
-              style={[
-                styles.chip,
-                {
-                  backgroundColor: platform === p ? colors.primary : colors.muted,
-                  borderColor: platform === p ? colors.primary : colors.border,
-                },
-              ]}
-              onPress={() => setPlatform(p)}
-            >
-              <Text
-                style={[
-                  styles.chipText,
-                  { color: platform === p ? colors.primaryForeground : colors.mutedForeground },
-                ]}
-              >
-                {p}
-              </Text>
-            </TouchableOpacity>
-          ))}
+    <View style={[styles.wrapper, { backgroundColor: colors.background }]}>
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[
+          styles.container,
+          { paddingTop: 16 + webTopPad, paddingBottom: 16 },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={16}
+      >
+        <View style={styles.field}>
+          <Text style={labelStyle}>Question Name *</Text>
+          <TextInput
+            style={inputStyle}
+            value={name}
+            onChangeText={setName}
+            placeholder="e.g. Longest Common Subsequence"
+            placeholderTextColor={colors.mutedForeground}
+            returnKeyType="next"
+          />
         </View>
-      </View>
 
-      <View style={styles.field}>
-        <Text style={labelStyle}>Topic Tags</Text>
-        <View style={styles.chips}>
-          {ALL_TAGS.map((tag) => {
-            const selected = tags.includes(tag);
-            return (
+        <View style={styles.field}>
+          <Text style={labelStyle}>Platform</Text>
+          <View style={styles.chips}>
+            {PLATFORMS.map((p) => (
               <TouchableOpacity
-                key={tag}
+                key={p}
                 style={[
                   styles.chip,
                   {
-                    backgroundColor: selected ? colors.accent : colors.muted,
-                    borderColor: selected ? colors.primary : colors.border,
+                    backgroundColor: platform === p ? colors.primary : colors.muted,
+                    borderColor: platform === p ? colors.primary : colors.border,
                   },
                 ]}
-                onPress={() => toggleTag(tag)}
+                onPress={() => setPlatform(p)}
               >
                 <Text
                   style={[
                     styles.chipText,
-                    { color: selected ? colors.accentForeground : colors.mutedForeground },
+                    { color: platform === p ? colors.primaryForeground : colors.mutedForeground },
                   ]}
                 >
-                  {tag}
+                  {p}
                 </Text>
               </TouchableOpacity>
-            );
-          })}
+            ))}
+          </View>
         </View>
-      </View>
 
-      <View style={styles.field}>
-        <Text style={labelStyle}>Approach</Text>
-        <TextInput
-          style={[inputStyle, styles.textarea]}
-          value={approach}
-          onChangeText={setApproach}
-          placeholder="Describe your approach..."
-          placeholderTextColor={colors.mutedForeground}
-          multiline
-          numberOfLines={4}
-          textAlignVertical="top"
-        />
-      </View>
+        <View style={styles.field}>
+          <Text style={labelStyle}>Topic Tags</Text>
+          <View style={styles.chips}>
+            {ALL_TAGS.map((tag) => {
+              const selected = tags.includes(tag);
+              return (
+                <TouchableOpacity
+                  key={tag}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: selected ? colors.accent : colors.muted,
+                      borderColor: selected ? colors.primary : colors.border,
+                    },
+                  ]}
+                  onPress={() => toggleTag(tag)}
+                >
+                  <Text
+                    style={[
+                      styles.chipText,
+                      { color: selected ? colors.accentForeground : colors.mutedForeground },
+                    ]}
+                  >
+                    {tag}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
 
-      <View style={styles.field}>
-        <Text style={labelStyle}>Time Complexity</Text>
-        <TextInput
-          style={inputStyle}
-          value={timeComplexity}
-          onChangeText={setTimeComplexity}
-          placeholder="e.g. O(n log n)"
-          placeholderTextColor={colors.mutedForeground}
-        />
-      </View>
+        <View style={styles.field}>
+          <Text style={labelStyle}>Approach</Text>
+          <TextInput
+            style={[inputStyle, styles.textarea]}
+            value={approach}
+            onChangeText={setApproach}
+            placeholder="Describe your approach..."
+            placeholderTextColor={colors.mutedForeground}
+            multiline
+            textAlignVertical="top"
+          />
+        </View>
 
-      <View style={styles.field}>
-        <Text style={labelStyle}>Confidence Level</Text>
-        <View style={styles.chips}>
-          {([1, 2, 3, 4, 5] as const).map((level) => (
-            <TouchableOpacity
-              key={level}
-              style={[
-                styles.confChip,
-                {
-                  backgroundColor:
-                    confidenceLevel === level ? confColors[level] : colors.muted,
-                  borderColor: confColors[level],
-                  borderWidth: 1.5,
-                },
-              ]}
-              onPress={() => setConfidenceLevel(level)}
-            >
-              <Text
+        <View style={styles.field}>
+          <Text style={labelStyle}>Time Complexity</Text>
+          <TextInput
+            style={inputStyle}
+            value={timeComplexity}
+            onChangeText={setTimeComplexity}
+            placeholder="e.g. O(n log n)"
+            placeholderTextColor={colors.mutedForeground}
+            returnKeyType="next"
+          />
+        </View>
+
+        <View style={styles.field}>
+          <Text style={labelStyle}>Confidence Level</Text>
+          <View style={styles.chips}>
+            {([1, 2, 3, 4, 5] as const).map((level) => (
+              <TouchableOpacity
+                key={level}
                 style={[
-                  styles.confChipText,
+                  styles.confChip,
                   {
-                    color:
-                      confidenceLevel === level ? "#fff" : confColors[level],
+                    backgroundColor: confidenceLevel === level ? confColors[level] : colors.muted,
+                    borderColor: confColors[level],
+                    borderWidth: 1.5,
                   },
                 ]}
+                onPress={() => setConfidenceLevel(level)}
               >
-                {level}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.confChipText,
+                    { color: confidenceLevel === level ? "#fff" : confColors[level] },
+                  ]}
+                >
+                  {level}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <Text style={[styles.hint, { color: colors.mutedForeground }]}>
+            1-2 = Weak · 3 = Medium · 4-5 = Strong
+          </Text>
         </View>
-        <Text style={[styles.hint, { color: colors.mutedForeground }]}>
-          1-2 = Weak · 3 = Medium · 4-5 = Strong
-        </Text>
-      </View>
 
-      <View style={styles.field}>
-        <Text style={labelStyle}>Last Revised Date</Text>
-        <TextInput
-          style={inputStyle}
-          value={lastRevisedDate}
-          onChangeText={setLastRevisedDate}
-          placeholder="YYYY-MM-DD"
-          placeholderTextColor={colors.mutedForeground}
-        />
-      </View>
+        <View style={styles.field}>
+          <Text style={labelStyle}>Last Revised Date</Text>
+          <TextInput
+            style={inputStyle}
+            value={lastRevisedDate}
+            onChangeText={setLastRevisedDate}
+            placeholder="YYYY-MM-DD"
+            placeholderTextColor={colors.mutedForeground}
+            returnKeyType="next"
+          />
+        </View>
 
-      <View style={styles.field}>
-        <Text style={labelStyle}>Mistake Notes</Text>
-        <TextInput
-          style={[inputStyle, styles.textarea]}
-          value={mistakeNotes}
-          onChangeText={setMistakeNotes}
-          placeholder="What did you get wrong? What tripped you up?"
-          placeholderTextColor={colors.mutedForeground}
-          multiline
-          numberOfLines={4}
-          textAlignVertical="top"
-        />
-      </View>
+        <View style={[styles.field, { marginBottom: 0 }]}>
+          <Text style={labelStyle}>Mistake Notes</Text>
+          <TextInput
+            style={[inputStyle, styles.textarea]}
+            value={mistakeNotes}
+            onChangeText={setMistakeNotes}
+            placeholder="What did you get wrong? What tripped you up?"
+            placeholderTextColor={colors.mutedForeground}
+            multiline
+            textAlignVertical="top"
+          />
+        </View>
+      </KeyboardAwareScrollView>
 
-      {error ? (
-        <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>
-      ) : null}
-
-      <TouchableOpacity
-        style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: saving ? 0.7 : 1 }]}
-        onPress={handleSubmit}
-        disabled={saving}
+      {/* Fixed footer — always visible above keyboard */}
+      <View
+        style={[
+          styles.footer,
+          {
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
+            paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 16),
+          },
+        ]}
       >
-        <Feather name="save" size={18} color={colors.primaryForeground} />
-        <Text style={[styles.submitText, { color: colors.primaryForeground }]}>
-          {saving ? "Saving..." : submitLabel}
-        </Text>
-      </TouchableOpacity>
-    </ScrollView>
+        {error ? (
+          <Text style={[styles.errorText, { color: colors.destructive }]}>{error}</Text>
+        ) : null}
+        <TouchableOpacity
+          style={[styles.submitBtn, { backgroundColor: colors.primary, opacity: saving ? 0.7 : 1 }]}
+          onPress={handleSubmit}
+          disabled={saving}
+        >
+          <Feather name="save" size={18} color={colors.primaryForeground} />
+          <Text style={[styles.submitText, { color: colors.primaryForeground }]}>
+            {saving ? "Saving..." : submitLabel}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+  },
   container: {
     padding: 16,
-    gap: 4,
   },
   field: {
-    marginBottom: 16,
+    marginBottom: 18,
   },
   label: {
     fontSize: 12,
@@ -306,7 +321,7 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
   },
   textarea: {
-    height: 100,
+    height: 110,
     paddingTop: 12,
   },
   chips: {
@@ -340,10 +355,15 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     marginTop: 6,
   },
+  footer: {
+    borderTopWidth: 1,
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    gap: 8,
+  },
   errorText: {
     fontSize: 13,
     fontFamily: "Inter_500Medium",
-    marginBottom: 12,
     textAlign: "center",
   },
   submitBtn: {
@@ -353,7 +373,6 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 14,
     borderRadius: 12,
-    marginTop: 4,
   },
   submitText: {
     fontSize: 16,

@@ -1,13 +1,37 @@
+import { Feather } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Tabs } from "expo-router";
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { SymbolView } from "expo-symbols";
-import { Feather } from "@expo/vector-icons";
 import React from "react";
-import { Platform, StyleSheet, View, useColorScheme } from "react-native";
+import { Platform, StyleSheet, TouchableOpacity, View, useColorScheme } from "react-native";
 
+import { useTheme } from "@/context/ThemeContext";
 import { useColors } from "@/hooks/useColors";
+
+function ThemeToggleButton() {
+  const { resolved, toggle } = useTheme();
+  const colors = useColors();
+  const isDark = resolved === "dark";
+
+  return (
+    <TouchableOpacity
+      onPress={toggle}
+      style={[
+        styles.themeBtn,
+        { backgroundColor: colors.muted, borderColor: colors.border },
+      ]}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+    >
+      <Feather
+        name={isDark ? "sun" : "moon"}
+        size={18}
+        color={isDark ? colors.warning : colors.mutedForeground}
+      />
+    </TouchableOpacity>
+  );
+}
 
 function NativeTabLayout() {
   return (
@@ -30,8 +54,8 @@ function NativeTabLayout() {
 
 function ClassicTabLayout() {
   const colors = useColors();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const { resolved } = useTheme();
+  const isDark = resolved === "dark";
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
 
@@ -44,6 +68,8 @@ function ClassicTabLayout() {
         headerStyle: { backgroundColor: colors.background },
         headerTintColor: colors.foreground,
         headerShadowVisible: false,
+        headerRight: () => <ThemeToggleButton />,
+        headerRightContainerStyle: { paddingRight: 16 },
         tabBarStyle: {
           position: "absolute",
           backgroundColor: isIOS ? "transparent" : colors.background,
@@ -60,9 +86,7 @@ function ClassicTabLayout() {
               style={StyleSheet.absoluteFill}
             />
           ) : isWeb ? (
-            <View
-              style={[StyleSheet.absoluteFill, { backgroundColor: colors.background }]}
-            />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background }]} />
           ) : null,
       }}
     >
@@ -113,4 +137,13 @@ export default function TabLayout() {
   return <ClassicTabLayout />;
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  themeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
