@@ -15,7 +15,9 @@
 | 📱 **Expo Go (Mobile)** | Scan QR from the [Live Preview](https://395ce506-0262-4c03-aed3-840231bf84a1-00-26usw98x1ppdv.pike.replit.dev) |
 | 🌍 **Web Preview** | [Open in Browser](https://395ce506-0262-4c03-aed3-840231bf84a1-00-26usw98x1ppdv.pike.replit.dev) |
 
-<img width="809" height="989" alt="Screenshot 2026-05-23 103217" src="https://github.com/user-attachments/assets/ee561e2f-ee5c-40fe-bc4b-60f52692e2f7" />
+<p align="center">
+  <img src="YOUR_IMAGE_LINK_HERE" width="700"/>
+</p>
 
 
 > **Best experience:** Install [Expo Go](https://expo.dev/client) on your Android/iOS phone and scan the QR code from the live preview.
